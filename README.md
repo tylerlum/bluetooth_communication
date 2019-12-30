@@ -6,6 +6,10 @@ The purpose of this repository is to store Arduino code and instructions for Blu
 
 This Arduino software demonstrates for basic communication between a Slave and Master. The Slave reads a potentiometer's value, sends it to the Master through Bluetooth, and then the Master lights up the LED with a brightness proportional to that value.
 
+![Alt Text](demo.gif)
+
+_Figure 1: Turning the potentiometer of the Slave wirelessly changes the LED brightness of the Master using Bluetooth._
+
 ## Requirements
 
 * 2 x Arduino Unos or similar
