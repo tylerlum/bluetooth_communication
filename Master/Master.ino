@@ -2,7 +2,7 @@
 const int LED_PIN = 10;
 
 // Global variables
-int brightness = 1020;
+int brightness = 255;
 
 void setup() {
   // Setup Serial port
