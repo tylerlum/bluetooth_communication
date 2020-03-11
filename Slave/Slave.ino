@@ -8,25 +8,26 @@ VL53L0X sensor2;
 const int PWM_PIN = 10;
 const int DIRECTION_UP_PIN = 9;
 
+const int SENSOR_XSHUT_PIN = 7;
+const int SENSOR_2_XSHUT_PIN = 8;
+
 void setup()
 {
-
-  pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  digitalWrite(7, LOW);
-  digitalWrite(8, LOW);
+  pinMode(SENSOR_XSHUT_PIN, OUTPUT);
+  pinMode(SENSOR_2_XSHUT_PIN, OUTPUT);
+  digitalWrite(SENSOR_XSHUT_PIN, LOW);
+  digitalWrite(SENSOR_2_XSHUT_PIN, LOW);
 
   // Pins
   pinMode(PWM_PIN, OUTPUT);
   pinMode(DIRECTION_UP_PIN, OUTPUT);
-  
   delay(500);
   Wire.begin();
 
   Serial.begin (9600);
 
   //SENSOR
-  pinMode(7, INPUT);
+  pinMode(SENSOR_XSHUT_PIN, INPUT);
   delay(150);
   Serial.println("00");
   sensor.init(true);
@@ -36,7 +37,7 @@ void setup()
   Serial.println("02");
 
   //SENSOR 2
-  pinMode(8, INPUT);
+  pinMode(SENSOR_2_XSHUT_PIN, INPUT);
   delay(150);
   sensor2.init(true);
   Serial.println("03");
