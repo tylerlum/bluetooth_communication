@@ -1,56 +1,147 @@
 #include <Wire.h>
 #include <VL53L0X.h>
 
-// Sensor object
-VL53L0X sensor;
+// Sensors
+VL53L0X sensor1;
+VL53L0X sensor2;
 
 // Pins
-const int LED_PIN = 10;
+const int PWM_PIN = 10;
+const int DIRECTION_UP_PIN = 9;
+const int SENSOR_1_XSHUT_PIN = 7;
+const int SENSOR_2_XSHUT_PIN = 8;
 
-// Global variables
-int valueToSend = 0;
-double measuredValue = 0;
+void setupSensors() {
+  // Turn off sensors using XSHUT pins
+  pinMode(SENSOR_1_XSHUT_PIN, OUTPUT);
+  pinMode(SENSOR_2_XSHUT_PIN, OUTPUT);
+  digitalWrite(SENSOR_1_XSHUT_PIN, LOW);
+  digitalWrite(SENSOR_2_XSHUT_PIN, LOW);
 
-int count = 0;
-double accumulation = 0;
+  // Setup I2C communication
+  delay(500);
+  Wire.begin();
 
-void setup() {
-  // Setup Serial port
+  // Setup Serial for prints
   Serial.begin(9600);
 
-  // Setup sensor
-  Wire.begin();
-  sensor.init();
-  sensor.setTimeout(500);
-  sensor.startContinuous();
+  // Sensor 1 setup
+  pinMode(SENSOR_1_XSHUT_PIN, INPUT);  // Turn on sensor. Can't set OUTPUT HIGH b/c XSHUT can't handle 5V
+  delay(150);
+  Serial.println("00");
+  sensor1.init(true);
+  Serial.println("01");
+  delay(100);
+  sensor1.setAddress((uint8_t)22);
+  Serial.println("02");
+
+  // Sensor 2 setup
+  pinMode(SENSOR_2_XSHUT_PIN, INPUT);  // Turn on sensor. Can't set OUTPUT HIGH b/c XSHUT can't handle 5V
+  delay(150);
+  sensor2.init(true);
+  Serial.println("03");
+  delay(100);
+  sensor2.setAddress((uint8_t)25);
+  Serial.println("04");
+
+  Serial.println("");
+  Serial.println("addresses set");
+  Serial.println("");
+  Serial.println("");
+
+  sensor1.setTimeout(500);
+  sensor2.setTimeout(500);
 }
 
-void loop() {
+void setup()
+{
+  setupSensors();
+  
+  // Pins
+  pinMode(PWM_PIN, OUTPUT);
+  pinMode(DIRECTION_UP_PIN, OUTPUT);
+}
 
-  if (count == 20) {
-    Serial.println(accumulation / count);
-    count = 0;
-    accumulation = 0;
+void checkAddresses() {
+  Serial.println("__________________________________________________________________");
+  Serial.println("");
+  Serial.println("=================================");
+  Serial.println ("I2C scanner. Scanning ...");
+  byte count = 0;
+
+
+  for (byte i = 1; i < 30; i++)
+  {
+
+    Wire.beginTransmission (i);
+    if (Wire.endTransmission () == 0)
+    {
+      Serial.print ("Found address: ");
+      Serial.print (i, DEC);
+      Serial.print (" (0x");
+      Serial.print (i, HEX);
+      Serial.println (")");
+      count++;
+      delay (1);  // maybe unneeded?
+    } // end of good response
+  } // end of for loop
+  Serial.println ("Done.");
+  Serial.print ("Found ");
+  Serial.print (count, DEC);
+  Serial.println (" device(s).");
+  Serial.println("=================================");
+}
+
+void loop()
+{
+  checkAddresses();
+
+  //CHECK DISTANCES
+  long upperSensorDistance = (sensor1.readRangeSingleMillimeters());
+  long lowerSensorDistance = (sensor2.readRangeSingleMillimeters());
+  
+  // Sensor 1
+  if (!sensor1.timeoutOccurred())
+  {
+    Serial.println("_________________________________");
+    Serial.print("Upper Sensor Distance (mm): ");
+    Serial.println(upperSensorDistance);
+    Serial.println("_________________________________");
+    Serial.println("");
   } else {
-    count++;
-    accumulation += sensor.readRangeContinuousMillimeters();
+    Serial.println("TIMEOUT 1");
+  }
+
+  // Sensor 2
+  if (!sensor2.timeoutOccurred())
+  {
+    Serial.println("_________________________________");
+    Serial.print("Lower Sensor Distance (mm): ");
+    Serial.println(lowerSensorDistance);
+    Serial.println("_________________________________");
+    Serial.println("");
+  } else {
+    Serial.println("TIMEOUT 2");
   }
   
-  // Read sensor
+  Serial.println("__________________________________________________________________");
+  Serial.println();
+  Serial.println();
+  Serial.println();
+  Serial.println();
 
-  // Scale value. AnalogWrite is [0,255]. Sensor can give [0,65535]. Usual valid sensor values are [0,700].
-////  valueToSend = measuredValue > 800 ? 255 : measuredValue / 4;
-//  
-//  // Write to Serial port and LED
-//  // Serial.write(valueToSend);
-//  if (millis() - lastMeasurementTime > 100) {
-//    
-//  } else {
-//
-//  }
-//  Serial.println(measuredValue);
-////  analogWrite(LED_PIN, valueToSend);
-//
-//  // Throttle loop
-//  delay(10);
+  // Algorithm for lowering
+  if (upperSensorDistance > 5000 && lowerSensorDistance < 60) {
+    Serial.println("Lowering");
+    digitalWrite(DIRECTION_UP_PIN, LOW);
+    analogWrite(PWM_PIN, 255);
+  } else if (upperSensorDistance < 60) {
+    Serial.println("Lowering");
+    digitalWrite(DIRECTION_UP_PIN, LOW);
+    analogWrite(PWM_PIN, 255);
+  } else {
+    analogWrite(PWM_PIN, 0);
+  }
+
+  delay(500);//can change to a lower time like 100
 }
