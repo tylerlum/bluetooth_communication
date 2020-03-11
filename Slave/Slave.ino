@@ -9,6 +9,10 @@ const int LED_PIN = 10;
 
 // Global variables
 int valueToSend = 0;
+double measuredValue = 0;
+
+int count = 0;
+double accumulation = 0;
 
 void setup() {
   // Setup Serial port
@@ -22,16 +26,31 @@ void setup() {
 }
 
 void loop() {
+
+  if (count == 20) {
+    Serial.println(accumulation / count);
+    count = 0;
+    accumulation = 0;
+  } else {
+    count++;
+    accumulation += sensor.readRangeContinuousMillimeters();
+  }
+  
   // Read sensor
-  valueToSend = sensor.readRangeContinuousMillimeters();
 
   // Scale value. AnalogWrite is [0,255]. Sensor can give [0,65535]. Usual valid sensor values are [0,700].
-  valueToSend = valueToSend > 800 ? 255 : valueToSend / 4;
-  
-  // Write to Serial port and LED
-  Serial.write(valueToSend);
-  analogWrite(LED_PIN, valueToSend);
-
-  // Throttle loop
-  delay(10);
+////  valueToSend = measuredValue > 800 ? 255 : measuredValue / 4;
+//  
+//  // Write to Serial port and LED
+//  // Serial.write(valueToSend);
+//  if (millis() - lastMeasurementTime > 100) {
+//    
+//  } else {
+//
+//  }
+//  Serial.println(measuredValue);
+////  analogWrite(LED_PIN, valueToSend);
+//
+//  // Throttle loop
+//  delay(10);
 }
