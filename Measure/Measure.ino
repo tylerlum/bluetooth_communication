@@ -68,10 +68,6 @@ void setup()
 {
   setupSensors();
 
-  // Motor pins
-  pinMode(PWM_PIN, OUTPUT);
-  pinMode(DIRECTION_UP_PIN, OUTPUT);
-  
   // Sensor failure pins 
   digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
   digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
@@ -82,15 +78,6 @@ void setup()
 
   // Limit switch pins
   pinMode(UPPER_LIMIT_SWITCH_PIN, INPUT_PULLUP);
-
-  Serial.print("digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW is: ");
-  Serial.println(digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW);
-  while (digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW) {
-    digitalWrite(DIRECTION_UP_PIN, HIGH);
-    analogWrite(PWM_PIN, 255);
-  }
-  analogWrite(PWM_PIN, 0);
-
 }
 
 void checkAddresses() {
@@ -167,20 +154,6 @@ void loop()
     Serial.println();
     Serial.println();
 
-    // Algorithm for lowering
-    if (upperSensorDistance > 5000 && lowerSensorDistance < 35) {
-      Serial.println("Lowering");
-      digitalWrite(DIRECTION_UP_PIN, LOW);
-      analogWrite(PWM_PIN, 255);
-    } else if (upperSensorDistance < 65) {
-      Serial.println("Lowering");
-      digitalWrite(DIRECTION_UP_PIN, LOW);
-      analogWrite(PWM_PIN, 255);
-    } else {
-      analogWrite(PWM_PIN, 0);
-    }
-
-    // Reset globals
     upperSensorDistanceAccumulation = 0;
     lowerSensorDistanceAccumulation = 0;
     countLoops = 0;
