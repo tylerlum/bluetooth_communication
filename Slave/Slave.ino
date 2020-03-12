@@ -15,6 +15,13 @@ const int SENSOR_1_FAILURE_PIN = 2;
 const int SENSOR_2_FAILURE_PIN = 3;
 const int UPPER_LIMIT_SWITCH_PIN = 4;
 
+// Timing
+unsigned long lastTime = millis();
+const int AVERAGING_TIME_MS = 100;
+long upperSensorDistanceAccumulation = 0;
+long lowerSensorDistanceAccumulation = 0;
+int countLoops = 0;
+
 void setupSensors() {
   // Turn off sensors using XSHUT pins
   pinMode(SENSOR_1_XSHUT_PIN, OUTPUT);
@@ -60,10 +67,6 @@ void setupSensors() {
 void setup()
 {
   setupSensors();
-  
-  // Pins
-  pinMode(PWM_PIN, OUTPUT);
-  pinMode(DIRECTION_UP_PIN, OUTPUT);
 
   // Sensor failure pins 
   digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
@@ -72,18 +75,9 @@ void setup()
   pinMode(SENSOR_2_FAILURE_PIN, OUTPUT);
   digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
   digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
-  digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
 
   // Limit switch pins
   pinMode(UPPER_LIMIT_SWITCH_PIN, INPUT_PULLUP);
-
-  Serial.print("digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW is: ");
-  Serial.println(digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW);
-  while (digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW) {
-    digitalWrite(DIRECTION_UP_PIN, HIGH);
-    analogWrite(PWM_PIN, 255);
-  }
-  analogWrite(PWM_PIN, 0);
 }
 
 void checkAddresses() {
@@ -118,56 +112,51 @@ void checkAddresses() {
 
 void loop()
 {
-  checkAddresses();
-
-  //CHECK DISTANCES
-  long upperSensorDistance = (sensor1.readRangeSingleMillimeters());
-  long lowerSensorDistance = (sensor2.readRangeSingleMillimeters());
-  
-  // Sensor 1
-  if (!sensor1.timeoutOccurred())
-  {
-    Serial.println("_________________________________");
-    Serial.print("Upper Sensor Distance (mm): ");
-    Serial.println(upperSensorDistance);
-    Serial.println("_________________________________");
-    Serial.println("");
-  } else {
-    Serial.println("TIMEOUT 1");
-    digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
+  if (millis() - lastTime < AVERAGING_TIME_MS) {
+    upperSensorDistanceAccumulation += (sensor1.readRangeSingleMillimeters());
+    lowerSensorDistanceAccumulation += (sensor2.readRangeSingleMillimeters());
+    countLoops++;
   }
-
-  // Sensor 2
-  if (!sensor2.timeoutOccurred())
-  {
-    Serial.println("_________________________________");
-    Serial.print("Lower Sensor Distance (mm): ");
-    Serial.println(lowerSensorDistance);
-    Serial.println("_________________________________");
-    Serial.println("");
-  } else {
-    Serial.println("TIMEOUT 2");
-    digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
-  }
+  else {
+    long upperSensorDistance = upperSensorDistanceAccumulation / countLoops;
+    long lowerSensorDistance = lowerSensorDistanceAccumulation / countLoops;
+    checkAddresses();
   
-  Serial.println("__________________________________________________________________");
-  Serial.println();
-  Serial.println();
-  Serial.println();
-  Serial.println();
+    // Sensor 1
+    if (!sensor1.timeoutOccurred())
+    {
+      Serial.println("_________________________________");
+      Serial.print("Upper Sensor Distance (mm): ");
+      Serial.println(upperSensorDistance);
+      Serial.println("_________________________________");
+      Serial.println("");
+    } else {
+      Serial.println("TIMEOUT 1");
+      digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
+    }
   
-  // Algorithm for lowering
-  if (upperSensorDistance > 5000 && lowerSensorDistance < 60) {
-    Serial.println("Lowering");
-    digitalWrite(DIRECTION_UP_PIN, LOW);
-    analogWrite(PWM_PIN, 255);
-  } else if (upperSensorDistance < 45) {
-    Serial.println("Lowering");
-    digitalWrite(DIRECTION_UP_PIN, LOW);
-    analogWrite(PWM_PIN, 255);
-  } else {
-    analogWrite(PWM_PIN, 0);
-  }
+    // Sensor 2
+    if (!sensor2.timeoutOccurred())
+    {
+      Serial.println("_________________________________");
+      Serial.print("Lower Sensor Distance (mm): ");
+      Serial.println(lowerSensorDistance);
+      Serial.println("_________________________________");
+      Serial.println("");
+    } else {
+      Serial.println("TIMEOUT 2");
+      digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
+    }
+    
+    Serial.println("__________________________________________________________________");
+    Serial.println();
+    Serial.println();
+    Serial.println();
+    Serial.println();
 
-  delay(100);//can change to a lower time like 100
+    upperSensorDistanceAccumulation = 0;
+    lowerSensorDistanceAccumulation = 0;
+    countLoops = 0;
+    lastTime = millis();
+  }
 }
