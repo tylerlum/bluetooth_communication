@@ -100,11 +100,6 @@ void checkAddresses() {
   Serial.print (count, DEC);
   Serial.println (" device(s).");
   Serial.println("=================================");
-
-  if (count <= 0) {
-    Serial.println("COUNT WAS 0, running setupSensors()");
-    setupSensors();
-  }
 }
 
 void loop()
@@ -146,7 +141,7 @@ void loop()
   Serial.println();
   Serial.println();
   Serial.println();
-
+  
   // Algorithm for lowering
   if (lowerSensorDistance < 60) {
     Serial.println("Lowering");
