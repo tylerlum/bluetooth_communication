@@ -11,6 +11,9 @@ const int DIRECTION_UP_PIN = 9;
 const int SENSOR_1_XSHUT_PIN = 7;
 const int SENSOR_2_XSHUT_PIN = 8;
 
+const int SENSOR_1_FAILURE_PIN = 2;
+const int SENSOR_2_FAILURE_PIN = 3;
+
 void setupSensors() {
   // Turn off sensors using XSHUT pins
   pinMode(SENSOR_1_XSHUT_PIN, OUTPUT);
@@ -60,6 +63,13 @@ void setup()
   // Pins
   pinMode(PWM_PIN, OUTPUT);
   pinMode(DIRECTION_UP_PIN, OUTPUT);
+
+  digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
+  digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
+  pinMode(SENSOR_1_FAILURE_PIN, OUTPUT);
+  pinMode(SENSOR_2_FAILURE_PIN, OUTPUT);
+  digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
+  digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
 }
 
 void checkAddresses() {
@@ -90,6 +100,11 @@ void checkAddresses() {
   Serial.print (count, DEC);
   Serial.println (" device(s).");
   Serial.println("=================================");
+
+  if (count <= 0) {
+    Serial.println("COUNT WAS 0, running setupSensors()");
+    setupSensors();
+  }
 }
 
 void loop()
@@ -110,6 +125,7 @@ void loop()
     Serial.println("");
   } else {
     Serial.println("TIMEOUT 1");
+    digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
   }
 
   // Sensor 2
@@ -122,6 +138,7 @@ void loop()
     Serial.println("");
   } else {
     Serial.println("TIMEOUT 2");
+    digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
   }
   
   Serial.println("__________________________________________________________________");
@@ -131,7 +148,7 @@ void loop()
   Serial.println();
 
   // Algorithm for lowering
-  if (upperSensorDistance > 5000 && lowerSensorDistance < 60) {
+  if (lowerSensorDistance < 60) {
     Serial.println("Lowering");
     digitalWrite(DIRECTION_UP_PIN, LOW);
     analogWrite(PWM_PIN, 255);
