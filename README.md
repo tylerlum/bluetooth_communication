@@ -2,6 +2,8 @@
 
 The purpose of this repository is to store Arduino code and instructions for Bluetooth communication between the HC-05 and HC-06 Bluetooth modules.
 
+NEW INFORMATION TO WORK WITH TOF SENSOR. You must copy the `vl53l0x-arduino-master` code into `C:\Program Files (x86)\Arduino\libraries` or wherever the `Arduino\libraries` folder is. This is necessary to compile.
+
 ## What does this code do?
 
 This Arduino software demonstrates for basic communication between a Slave and Master. The Slave reads a potentiometer's value, sends it to the Master through Bluetooth, and then the Master lights up the LED with a brightness proportional to that value.
