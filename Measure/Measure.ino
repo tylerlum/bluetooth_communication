@@ -69,12 +69,12 @@ void setup()
   setupSensors();
 
   // Sensor failure pins 
-  digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
-  digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
+  digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
+  digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
   pinMode(SENSOR_1_FAILURE_PIN, OUTPUT);
   pinMode(SENSOR_2_FAILURE_PIN, OUTPUT);
-  digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
-  digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
+  digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
+  digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
 
   // Limit switch pins
   pinMode(UPPER_LIMIT_SWITCH_PIN, INPUT_PULLUP);
@@ -132,7 +132,7 @@ void loop()
       Serial.println("");
     } else {
       Serial.println("TIMEOUT 1");
-      digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
+      digitalWrite(SENSOR_1_FAILURE_PIN, LOW);
     }
   
     // Sensor 2
@@ -145,7 +145,7 @@ void loop()
       Serial.println("");
     } else {
       Serial.println("TIMEOUT 2");
-      digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
+      digitalWrite(SENSOR_2_FAILURE_PIN, LOW);
     }
     
     Serial.println("__________________________________________________________________");
