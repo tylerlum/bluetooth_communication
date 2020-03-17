@@ -39,11 +39,13 @@ float platformSensorDistance, baseSensorDistance;
 float desiredHeight;
 int prevHeightError = 0;
 int heightError;
+bool outlierPlat = false;
+bool outlierBase = false;
 
 // PID Variables
 float gain, p, i, d;
-int K = 1;
-int Kp = 2;
+float K = 0.25;
+int Kp = 1;
 int Ki = 0;
 int Kd = 1;
 int iMax = 0;
@@ -128,13 +130,34 @@ void checkAddresses() {
 
 void loop()
 {
-  platformSensorDistance = platformSensorAvg.reading(platformSensor.readRangeSingleMillimeters());
-  baseSensorDistance = baseSensorAvg.reading(baseSensor.readRangeSingleMillimeters());
+  int start = millis();
+  int readingPlat = platformSensor.readRangeSingleMillimeters();
+  int readingBase = baseSensor.readRangeSingleMillimeters();
+
+  if (readingPlat > 5000 && outlierPlat == false){
+    outlierPlat = true;
+    platformSensorDistance = platformSensorAvg.getAvg();
+  }
+  else {
+    platformSensorDistance = platformSensorAvg.reading(readingPlat);
+    outlierPlat = false;
+  }
+  if (readingBase > 5000 && outlierBase == false){
+    outlierBase = true;
+    baseSensorDistance = baseSensorAvg.getAvg();
+  }
+  else {
+    baseSensorDistance = baseSensorAvg.reading(readingBase);
+    outlierBase = false;
+  }
+ 
+//  baseSensorDistance = baseSensorAvg.reading(baseSensor.readRangeSingleMillimeters());
   // Sensor 1
   if (!platformSensor.timeoutOccurred())
   {
-    Serial.print("Platform Sensor Distance (mm): ");
+//    Serial.print("PlatformSensor(mm): ");
     Serial.print(platformSensorDistance);
+    Serial.print(", ");
   } else {
     Serial.println("TIMEOUT 1");
     digitalWrite(PLATFORM_SENSOR_FAILURE_PIN, LOW);
@@ -143,17 +166,18 @@ void loop()
   // Sensor 2
   if (!baseSensor.timeoutOccurred())
   {
-    Serial.print(" Base Sensor Distance (mm): ");
+//    Serial.print(" BaseSensor(mm): ");
     Serial.print(baseSensorDistance);
+    Serial.print(", ");
   } else {
     Serial.println("TIMEOUT 2");
     digitalWrite(BASE_SENSOR_FAILURE_PIN, LOW);
   }
 //
-  Serial.print(" UPPER_LIMIT: ");   
-  Serial.print(digitalRead(UPPER_LIMIT_SWITCH_PIN));
-  Serial.print(" LOWER_LIMIT: ");   
-  Serial.println(digitalRead(LOWER_LIMIT_SWITCH_PIN));
+//  Serial.print(" UPPER_LIMIT: ");   
+//  Serial.print(digitalRead(UPPER_LIMIT_SWITCH_PIN));
+//  Serial.print(" LOWER_LIMIT: ");   
+//  Serial.println(digitalRead(LOWER_LIMIT_SWITCH_PIN));
   
   if (baseSensorDistance < 5000){
     float desiredHeightCalc = (Y_MIN - Y_MAX)*(2068*exp(-0.0141*baseSensorDistance))/228.6 + Y_MAX;
@@ -169,10 +193,12 @@ void loop()
 
     prevHeightError = heightError;
     heightError = desiredHeight - platformSensorDistance;
-    Serial.print("Desired Height: ");
+//    Serial.print("Desired Height: ");
     Serial.print(desiredHeight);
-    Serial.print(" Height Error: ");
+    Serial.print(", ");
+//    Serial.print(" Height Error: ");
     Serial.print(heightError);
+    Serial.print(", ");
     if (abs(heightError) > 2){
       p = Kp*heightError;
       d = Kd*(heightError - prevHeightError);
@@ -181,17 +207,20 @@ void loop()
           i = (i/abs(i))*iMax;
         }
       gain = K*(p + i + d);
-      Serial.print(" Gain: ");
-      Serial.println(gain);
+//      Serial.print(" Gain: ");
+      Serial.print(gain);
+      Serial.print(", ");
       if (gain > 0 && !digitalRead(UPPER_LIMIT_SWITCH_PIN)){
-        Serial.println("Raising");
+//        Serial.println("Raising");
         digitalWrite(DIRECTION_UP_PIN, HIGH);
-        analogWrite(PWM_PIN, MOTOR_PWM + gain);
+        int pwm = MOTOR_PWM < 255? MOTOR_PWM + abs(gain): 255;
+        analogWrite(PWM_PIN, pwm);
       }
       else if(gain < 0 && !digitalRead(LOWER_LIMIT_SWITCH_PIN)){
-        Serial.println("Lowering");
+//        Serial.println("Lowering");
         digitalWrite(DIRECTION_UP_PIN, LOW);
-        analogWrite(PWM_PIN, MOTOR_PWM + abs(gain));
+        int pwm = MOTOR_PWM < 255? MOTOR_PWM + abs(gain): 255;
+        analogWrite(PWM_PIN, pwm);
       }
     }
     else {
@@ -199,11 +228,15 @@ void loop()
     }
   }
   else{
-    Serial.println("Reseting Height");
+//    Serial.println("Reseting Height");
     while (digitalRead(UPPER_LIMIT_SWITCH_PIN) == LOW) {
       digitalWrite(DIRECTION_UP_PIN, HIGH);
       analogWrite(PWM_PIN, 100);
     }
     analogWrite(PWM_PIN, 0);
   }
+
+  int time1 = millis() - start;
+//  Serial.print("Loop Time: ");
+  Serial.println(time1);
 }
