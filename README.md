@@ -96,4 +96,4 @@ Please read through all the instructions and important details before beginning,
 
 * AT commands in detail: http://www.mediafire.com/file/xr05sdzxp0p48bb/BLUTOOTH_AT_Command.pdf/file
 
-* Basic demonstration of HC-05: https://www.youtube.com/watch?v=x3KAXjnP06o.
+* Basic demonstration of HC-05: https://www.youtube.com/watch?v=x3KAXjnP06o

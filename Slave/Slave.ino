@@ -21,6 +21,9 @@ const int AVERAGING_TIME_MS = 100;
 long upperSensorDistanceAccumulation = 0;
 long lowerSensorDistanceAccumulation = 0;
 int countLoops = 0;
+const float yMax = 237.5;
+const float yMin = 209.0;
+
 
 void setupSensors() {
   // Turn off sensors using XSHUT pins
@@ -107,11 +110,11 @@ void checkAddresses() {
     Wire.beginTransmission (i);
     if (Wire.endTransmission () == 0)
     {
-      Serial.print ("Found address: ");
-      Serial.print (i, DEC);
-      Serial.print (" (0x");
-      Serial.print (i, HEX);
-      Serial.println (")");
+//      Serial.print ("Found address: ");
+//      Serial.print (i, DEC);
+//      Serial.print (" (0x");
+//      Serial.print (i, HEX);
+//      Serial.println (")");
       count++;
       delay (1);  // maybe unneeded?
     } // end of good response
@@ -119,8 +122,8 @@ void checkAddresses() {
   Serial.println ("Done.");
   Serial.print ("Found ");
   Serial.print (count, DEC);
-  Serial.println (" device(s).");
-  Serial.println("=================================");
+  Serial.print (" device(s). ");
+//  Serial.println("=================================");
 }
 
 void loop()
@@ -133,52 +136,80 @@ void loop()
   else {
     long upperSensorDistance = upperSensorDistanceAccumulation / countLoops;
     long lowerSensorDistance = lowerSensorDistanceAccumulation / countLoops;
-    checkAddresses();
+//    checkAddresses();
   
     // Sensor 1
     if (!sensor1.timeoutOccurred())
     {
-      Serial.println("_________________________________");
-      Serial.print("Upper Sensor Distance (mm): ");
-      Serial.println(upperSensorDistance);
-      Serial.println("_________________________________");
-      Serial.println("");
+//      Serial.println("_________________________________");
+//      Serial.print("Upper Sensor Distance (mm): ");
+//      Serial.println(upperSensorDistance);
+//      Serial.println("_________________________________");
+//      Serial.println("");
     } else {
-      Serial.println("TIMEOUT 1");
+//      Serial.println("TIMEOUT 1");
       digitalWrite(SENSOR_1_FAILURE_PIN, HIGH);
     }
   
     // Sensor 2
     if (!sensor2.timeoutOccurred())
     {
-      Serial.println("_________________________________");
-      Serial.print("Lower Sensor Distance (mm): ");
-      Serial.println(lowerSensorDistance);
-      Serial.println("_________________________________");
-      Serial.println("");
+//      Serial.println("_________________________________");
+//      Serial.print("Lower Sensor Distance (mm): ");
+//      Serial.println(lowerSensorDistance);
+//      Serial.println("_________________________________");
+//      Serial.println("");
     } else {
-      Serial.println("TIMEOUT 2");
+//      Serial.println("TIMEOUT 2");
       digitalWrite(SENSOR_2_FAILURE_PIN, HIGH);
     }
-    
-    Serial.println("__________________________________________________________________");
-    Serial.println();
-    Serial.println();
-    Serial.println();
-    Serial.println();
+//    
+//    Serial.println("__________________________________________________________________");
+//    Serial.println();
+//    Serial.println();
+//    Serial.println();
+//    Serial.println();
 
     // Algorithm for lowering
-    if (upperSensorDistance > 5000 && lowerSensorDistance < 35) {
-      Serial.println("Lowering");
-      digitalWrite(DIRECTION_UP_PIN, LOW);
-      analogWrite(PWM_PIN, 255);
-    } else if (upperSensorDistance < 65) {
-      Serial.println("Lowering");
-      digitalWrite(DIRECTION_UP_PIN, LOW);
-      analogWrite(PWM_PIN, 255);
-    } else {
-      analogWrite(PWM_PIN, 0);
-    }
+//    if (upperSensorDistance > 5000 && lowerSensorDistance < 35) {
+//      Serial.println("Lowering");
+//      digitalWrite(DIRECTION_UP_PIN, LOW);
+//      analogWrite(PWM_PIN, 255);
+//    } else if (upperSensorDistance < 65) {
+//      Serial.println("Lowering");
+//      digitalWrite(DIRECTION_UP_PIN, LOW);
+//      analogWrite(PWM_PIN, 255);
+//    } else {
+//      analogWrite(PWM_PIN, 0);
+//    }
+//      Serial.print(" Y Desired: ");
+//      Serial.print(yDesired);
+      Serial.println(" Lower sensor: ");
+      Serial.print(lowerSensorDistance);
+      Serial.print(" Upper sensor: ");
+      Serial.println(upperSensorDistance);
+//      Serial.println("");
+//    if (lowerSensorDistance < 5000){
+//      float yDesired = (yMin - yMax)*(81.4*exp(-0.141*lowerSensorDistance) - 2)/9 + yMax;
+//      Serial.print(" Y Desired: ");
+//      Serial.print(yDesired);
+//      Serial.println("");
+//      while (abs(upperSensorDistance - yDesired) > 1){
+//        if (upperSensorDistance > yDesired){
+////          Serial.println("Lowering");
+//          digitalWrite(DIRECTION_UP_PIN, LOW);
+//          analogWrite(PWM_PIN, 255);
+//        }
+//        else{
+////          Serial.println("Raising");
+//          digitalWrite(DIRECTION_UP_PIN, HIGH);
+//          analogWrite(PWM_PIN, 255);
+//        }
+//  
+//      }
+//      analogWrite(PWM_PIN, 0);
+//    }
+    
 
     // Reset globals
     upperSensorDistanceAccumulation = 0;
